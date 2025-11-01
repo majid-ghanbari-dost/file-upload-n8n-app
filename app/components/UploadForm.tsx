@@ -35,7 +35,7 @@ export default function UploadForm() {
 
       if (data.ok && data.jobId) {
         setJobId(data.jobId);
-        setSteps(1); // گام 1 تمام (آپلود)
+        setSteps(1); // گام 1 تمام
         pollResult(data.jobId);
       } else {
         setError(data.error || 'خطا در آپلود');
@@ -54,7 +54,7 @@ export default function UploadForm() {
         const data = await res.json();
 
         if (data.steps) {
-          setSteps(data.steps.length + 1); // +1 برای آپلود
+          setSteps(data.steps.length + 1);
         }
 
         if (data.status === 'done' && data.url) {
@@ -66,11 +66,11 @@ export default function UploadForm() {
           clearInterval(interval);
         }
       } catch (err) {
-        // ادامه می‌دیم
+        // ادامه
       }
-    }, 3000); // هر ۳ ثانیه
+    }, 3000);
 
-    setTimeout(() => clearInterval(interval), 120000); // ۲ دقیقه timeout
+    setTimeout(() => clearInterval(interval), 60000); // ۱ دقیقه timeout
   };
 
   return (
