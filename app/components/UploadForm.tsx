@@ -31,7 +31,6 @@ export default function UploadForm() {
 
       if (data.ok && data.jobId) {
         setJobId(data.jobId);
-        // شروع polling برای نتیجه
         pollResult(data.jobId);
       } else {
         setError(data.error || 'خطا در آپلود');
@@ -53,16 +52,15 @@ export default function UploadForm() {
           setResult({ url: data.url });
           clearInterval(interval);
         } else if (data.status === 'failed') {
-          setError('پردازش ناموفق بود');
+          setError('پردازش ناموفق');
           clearInterval(interval);
         }
       } catch (err) {
         // ادامه می‌دیم
       }
-    }, 2000);
+    }, 5000); // هر ۵ ثانیه چک کن (برای پردازش طولانی)
 
-    // حداکثر 2 دقیقه
-    setTimeout(() => clearInterval(interval), 120000);
+    setTimeout(() => clearInterval(interval), 600000); // ۱۰ دقیقه timeout
   };
 
   return (
@@ -70,47 +68,50 @@ export default function UploadForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            انتخاب فایل
+            آپلود سند (تصویر)
           </label>
           <input
             type="file"
+            accept="image/*"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             disabled={uploading}
           />
+          <p className="text-xs text-gray-500 mt-1">فرمت‌های مجاز: JPG, PNG, PDF. حداکثر ۵MB.</p>
         </div>
         <button
           type="submit"
           disabled={!file || uploading}
-          className="w-full bg-blue-600 text-white py-3 rounded-full font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-blue-600 text-white py-3 rounded-full font-medium hover:bg-blue-700 transition disabled:opacity-50"
         >
-          {uploading ? 'در حال آپلود...' : 'آپلود و پردازش'}
+          {uploading ? 'در حال ارسال به n8n...' : 'آپلود و پردازش سند'}
         </button>
       </form>
 
       {uploading && (
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-600">در حال ارسال به n8n...</p>
+          <p className="mt-2 text-sm text-gray-600">ارسال به n8n و پردازش AI (تا ۱۰ دقیقه طول می‌کشه)...</p>
         </div>
       )}
 
       {jobId && !result && !uploading && (
         <p className="text-center text-sm text-gray-600">
-          در حال پردازش... (job: {jobId})
+          در حال پردازش... (job: {jobId.slice(0, 8)}...)  
+          <br /> (OCR → AI → تولید Word)
         </p>
       )}
 
       {result && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-          <p className="text-green-800 font-medium mb-2">آپلود و پردازش موفق!</p>
+          <p className="text-green-800 font-medium mb-2">پردازش موفق! فایل Word آماده است.</p>
           <a
             href={result.url}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block bg-green-600 text-white px-4 py-2 rounded-full text-sm hover:bg-green-700 transition"
           >
-            دانلود فایل
+            دانلود فایل Word
           </a>
         </div>
       )}
