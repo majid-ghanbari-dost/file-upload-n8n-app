@@ -3,10 +3,13 @@
 
 import { useState } from 'react';
 
+const STEPS = 5; // 5 گام
+
 export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
+  const [steps, setSteps] = useState(0);
   const [result, setResult] = useState<{ url: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,6 +20,7 @@ export default function UploadForm() {
     setUploading(true);
     setError(null);
     setResult(null);
+    setSteps(0);
 
     const formData = new FormData();
     formData.append('file', file);
@@ -31,6 +35,7 @@ export default function UploadForm() {
 
       if (data.ok && data.jobId) {
         setJobId(data.jobId);
+        setSteps(1); // گام 1 تمام (آپلود)
         pollResult(data.jobId);
       } else {
         setError(data.error || 'خطا در آپلود');
@@ -48,7 +53,12 @@ export default function UploadForm() {
         const res = await fetch(`/api/status/${id}`);
         const data = await res.json();
 
+        if (data.steps) {
+          setSteps(data.steps.length + 1); // +1 برای آپلود
+        }
+
         if (data.status === 'done' && data.url) {
+          setSteps(STEPS);
           setResult({ url: data.url });
           clearInterval(interval);
         } else if (data.status === 'failed') {
@@ -58,9 +68,9 @@ export default function UploadForm() {
       } catch (err) {
         // ادامه می‌دیم
       }
-    }, 5000); // هر ۵ ثانیه چک کن (برای پردازش طولانی)
+    }, 3000); // هر ۳ ثانیه
 
-    setTimeout(() => clearInterval(interval), 600000); // ۱۰ دقیقه timeout
+    setTimeout(() => clearInterval(interval), 120000); // ۲ دقیقه timeout
   };
 
   return (
@@ -75,31 +85,46 @@ export default function UploadForm() {
             accept="image/*"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            disabled={uploading}
+            disabled={uploading || jobId}
           />
           <p className="text-xs text-gray-500 mt-1">فرمت‌های مجاز: JPG, PNG, PDF. حداکثر ۵MB.</p>
         </div>
         <button
           type="submit"
-          disabled={!file || uploading}
+          disabled={!file || uploading || jobId}
           className="w-full bg-blue-600 text-white py-3 rounded-full font-medium hover:bg-blue-700 transition disabled:opacity-50"
         >
-          {uploading ? 'در حال ارسال به n8n...' : 'آپلود و پردازش سند'}
+          {uploading ? 'در حال ارسال...' : 'شروع پردازش'}
         </button>
       </form>
 
       {uploading && (
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-600">ارسال به n8n و پردازش AI (تا ۱۰ دقیقه طول می‌کشه)...</p>
+          <p className="mt-2 text-sm text-gray-600">ارسال به n8n...</p>
         </div>
       )}
 
-      {jobId && !result && !uploading && (
-        <p className="text-center text-sm text-gray-600">
-          در حال پردازش... (job: {jobId.slice(0, 8)}...)  
-          <br /> (OCR → AI → تولید Word)
-        </p>
+      {jobId && (
+        <div className="space-y-4">
+          <p className="text-center text-sm text-gray-600">در حال پردازش...</p>
+          <div className="flex justify-center space-x-2">
+            {Array.from({ length: STEPS }, (_, index) => (
+              <div key={index} className="flex items-center space-x-1">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  index < steps ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
+                }`}>
+                  {index < steps ? '✓' : index + 1}
+                </div>
+                {index < STEPS - 1 && (
+                  <div className={`w-8 h-1 rounded-full ${
+                    index < steps - 1 ? 'bg-green-500' : 'bg-gray-300'
+                  }`}></div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {result && (
