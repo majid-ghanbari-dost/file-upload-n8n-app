@@ -101,13 +101,11 @@ export default function UploadForm() {
       {uploading && (
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-600">ارسال به n8n...</p>
         </div>
       )}
 
       {jobId && (
         <div className="space-y-4">
-          <p className="text-center text-sm text-gray-600">در حال پردازش...</p>
           <div className="flex justify-center space-x-2">
             {Array.from({ length: STEPS }, (_, index) => (
               <div key={index} className="flex items-center space-x-1">
