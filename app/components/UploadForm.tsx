@@ -70,7 +70,7 @@ export default function UploadForm() {
       }
     }, 3000);
 
-    setTimeout(() => clearInterval(interval), 60000); // ۱ دقیقه timeout
+    setTimeout(() => clearInterval(interval), 60000); // 1 دقیقه timeout
   };
 
   return (
@@ -82,16 +82,16 @@ export default function UploadForm() {
           </label>
           <input
             type="file"
-            accept="image/jpeg,image/png,application/pdf"
+            accept="image/*"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
             className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            disabled={uploading || !!jobId}
+            disabled={uploading || jobId !== null}
           />
-          <p className="text-xs text-gray-500 mt-1">فرمت‌های مجاز: JPG, PNG, PDF. حداکثر ۵MB.</p>
+          <p className="text-xs text-gray-500 mt-1">فرمت‌های مجاز: JPG, PNG, PDF. حداکثر 5MB.</p>
         </div>
         <button
           type="submit"
-          disabled={!file || uploading || !!jobId}
+          disabled={!file || uploading || jobId !== null}
           className="w-full bg-blue-600 text-white py-3 rounded-full font-medium hover:bg-blue-700 transition disabled:opacity-50"
         >
           {uploading ? 'در حال ارسال...' : 'شروع پردازش'}
