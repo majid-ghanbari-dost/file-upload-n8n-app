@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // ذخیره موقت (Map برای تست — بعداً Supabase/Redis)
 const jobStatus = new Map<string, any>();
 
+// GET: فرانت polling می‌کنه (قدم‌شمار + لینک)
 export async function GET(
   request: NextRequest,
   { params }: { params: { jobId: string } }
@@ -22,7 +23,7 @@ export async function GET(
   return NextResponse.json(status);
 }
 
-// POST: دریافت بروزرسانی از n8n (قدم‌ها + لینک)
+// POST: n8n بروزرسانی می‌فرسته (قدم‌ها + لینک)
 export async function POST(
   request: NextRequest,
   { params }: { params: { jobId: string } }
@@ -33,7 +34,7 @@ export async function POST(
 
     // ذخیره وضعیت جدید
     jobStatus.set(params.jobId, {
-      steps: steps || ['OCR', 'AI Translation', 'Code Generation', 'Word Creation', 'Supabase Upload'],  // قدم‌شمار
+      steps: steps || ['OCR', 'AI Translation', 'Code Generation', 'Word Creation', 'Supabase Upload'],  // ۵ قدم
       status: status || 'done',
       url: url || null
     });
